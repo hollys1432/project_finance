@@ -27,7 +27,14 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-(ze*z()&a7+s)j07$*eah
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+# ALLOWED_HOSTS 설정
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+
+# Render 환경 자동 감지 및 추가
+import os
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
