@@ -159,24 +159,35 @@ python manage.py us_step02_get_past_price
    - Start Command: `gunicorn config.wsgi:application`
 4. **환경 변수 설정**
    - 필수: `SECRET_KEY`, `DEBUG=False`, `DATABASE_URL`
-   - **무료 플랜:** `INIT_DATA=true`, `INIT_MODE=quick` 추가 ⭐
-5. **배포 및 초기 데이터 로딩**
-   - 무료 플랜: 빌드 시 자동 로딩 (Logs에서 확인)
-   - 유료 플랜: Shell에서 `python manage.py init_data --quick` 실행
+5. **배포 완료 후 로컬에서 데이터 수집** ⭐
+   - Render 무료 버전은 Shell 미제공
+   - Yahoo Finance API가 Render 서버 IP 차단
+   - **로컬에서 Render External Database URL로 연결하여 데이터 수집**
 6. **Cron Job 설정 (일일 자동 업데이트)**
    - Command: `python manage.py daily_update`
-   - Schedule: `0 18 * * *` (매일 오후 6시 UTC)
+   - Schedule: `0 1 * * *` (매일 오전 1시 UTC = 한국시간 오전 10시)
 
-**자세한 배포 가이드: `RENDER_DEPLOY.md`**
-**자동화 설정 가이드: `RENDER_AUTOMATION.md`**
+### 📋 상세 가이드
+
+- **`RENDER_DEPLOY.md`** - Render 배포 단계별 가이드
+- **`LOCAL_TO_PRODUCTION_GUIDE.md`** - 로컬에서 프로덕션 DB 연결 가이드 ⭐
+- **`RENDER_CRON_SETUP.md`** - Cron Job 설정 가이드
 
 ---
 
 ## 📖 문서
 
+### 배포 관련
 - **`RENDER_DEPLOY.md`** - Render 배포 단계별 가이드
-- **`RENDER_AUTOMATION.md`** - 자동 데이터 수집 설정 가이드
+- **`LOCAL_TO_PRODUCTION_GUIDE.md`** - 로컬에서 프로덕션 DB 연결 가이드 ⭐ **필독**
+- **`RENDER_CRON_SETUP.md`** - Cron Job 자동 업데이트 설정
+
+### 데이터 수집
 - **`DATA_COLLECTION_GUIDE.md`** - 데이터 수집 명령어 상세 사용법
+
+### 문제 해결
+- **`DEBUG_400.md`** - Bad Request (400) 에러 해결
+- **`DEPLOYMENT_CHECKLIST.md`** - 배포 전 체크리스트
 
 ---
 
@@ -256,22 +267,34 @@ python manage.py show_backtest_results
 
 ## 📝 환경 변수
 
-### 필수 환경 변수
+### Render 배포 시 (프로덕션)
 
 ```env
 SECRET_KEY=<your-secret-key>
 DEBUG=False
-ALLOWED_HOSTS=.render.com,localhost
-DATABASE_URL=<postgresql-url>
+ALLOWED_HOSTS=.render.com
+DATABASE_URL=<postgresql-url>  # Render가 자동으로 설정
 ```
 
-### 선택적 환경 변수
+### 로컬 개발 시
 
 ```env
-# 초기 데이터 자동 로딩 (권장하지 않음)
-INIT_DATA=false
-INIT_MODE=quick
+SECRET_KEY=django-insecure-local-dev-key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DATABASE_URL=postgresql://postgres:1234@localhost:5432/finance
 ```
+
+### 로컬에서 프로덕션 DB 연결 시
+
+```env
+SECRET_KEY=<your-production-secret-key>
+DEBUG=False
+ALLOWED_HOSTS=.render.com,localhost,127.0.0.1
+DATABASE_URL=<Render-External-Database-URL>  # Render Dashboard에서 복사
+```
+
+📖 **상세 가이드:** `LOCAL_TO_PRODUCTION_GUIDE.md`
 
 ---
 
