@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카페 증권</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        header {
+            background: #fff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 15px;
+            font-weight: 700;
+            color: #212529;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .logo:hover {
+            opacity: 0.7;
+        }
+
+        .header-time {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* 페이지 타이틀 */
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #212529;
+        }
+
+        /* 그리드 레이아웃 */
+        .indices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        /* 인덱스 카드 */
+        .index-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .index-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-color: #0064ff;
+        }
+
+        .index-card.active {
+            border-color: #0064ff;
+            box-shadow: 0 8px 16px rgba(0,100,255,0.15);
+        }
+
+        .index-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .index-name {
+            font-size: 14px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .index-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: #e7f5ff;
+            color: #0064ff;
+            font-weight: 600;
+        }
+
+        .index-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+
+        .index-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .index-change.positive {
+            color: #f23645;
+        }
+
+        .index-change.negative {
+            color: #0064ff;
+        }
+
+        .index-change.neutral {
+            color: #6c757d;
+        }
+
+        .change-arrow {
+            font-size: 12px;
+        }
+
+        /* 차트 섹션 */
+        .chart-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e9ecef;
+            display: none;
+            margin-bottom: 24px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .chart-section.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .close-btn {
+            background: #f8f9fa;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #e9ecef;
+            color: #212529;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 24px;
+        }
+
+        /* 상세 정보 */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .detail-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        /* 로딩 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f8f9fa;
+            border-top-color: #0064ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 검색 섹션 */
+        .search-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            border: 1px solid #e9ecef;
+        }
+
+        .search-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #212529;
+            text-align: center;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #0064ff;
+            box-shadow: 0 0 0 4px rgba(0, 100, 255, 0.1);
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .search-suggestions.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .company-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+
+        .company-code {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .market-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e7f5ff;
+            color: #0064ff;
+        }
+
+        .search-hint {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .indices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .index-value {
+                font-size: 24px;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .search-section {
+                padding: 24px 16px;
+            }
+
+            .search-input {
+                padding: 14px 16px;
+                font-size: 15px;
+            }
+        }
+
+        /* 미니 스파크라인 */
+        .mini-chart {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            opacity: 0.3;
+        }
+
+        .mini-chart canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">카페 증권</a>
+            <div class="header-time" id="currentTime"></div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container">
+        <!-- 주식 검색 섹션 -->
+        <div class="search-section">
+            <h2 class="search-title">주식 검색</h2>
+            <div class="search-container">
+                <input type="text" id="stockSearchInput" class="search-input"
+                       placeholder="종목명 또는 종목코드를 입력하세요 (예: 삼성전자, Apple...)"
+                       autocomplete="off">
+                <div id="stockSearchSuggestions" class="search-suggestions"></div>
+            </div>
+            <div class="search-hint">
+                💡 한국 주식과 미국 주식을 모두 검색할 수 있습니다
+            </div>
+        </div>
+
+        <h1 class="page-title">시장 지수</h1>
+
+        <!-- 차트 섹션 (처음엔 숨김) -->
+        <div class="chart-section" id="chartSection">
+            <div class="chart-header">
+                <h2 class="chart-title" id="chartTitle">차트</h2>
+                <button class="close-btn" onclick="closeChart()">닫기</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+            <div class="details-grid" id="detailsGrid">
+                <!-- 상세 정보가 여기에 동적으로 추가됨 -->
+            </div>
+        </div>
+
+        <!-- 인덱스 카드 그리드 -->
+        <div class="indices-grid" id="indicesGrid">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>데이터를 불러오는 중...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 데이터 설정
+        const indices = [
+            {
+                id: 'usd_krw',
+                name: '달러/원',
+                symbol: 'KRW=X',
+                badge: '환율',
+                color: '#0064ff'
+            },
+            {
+                id: 'kospi',
+                name: '코스피',
+                symbol: '^KS11',
+                badge: '한국',
+                color: '#f23645'
+            },
+            {
+                id: 'kosdaq',
+                name: '코스닥',
+                symbol: '^KQ11',
+                badge: '한국',
+                color: '#00c853'
+            },
+            {
+                id: 'sp500',
+                name: 'S&P 500',
+                symbol: '^GSPC',
+                badge: '미국',
+                color: '#ff6b6b'
+            },
+            {
+                id: 'dow',
+                name: '다우지수',
+                symbol: '^DJI',
+                badge: '미국',
+                color: '#2196F3'
+            },
+            {
+                id: 'nasdaq',
+                name: '나스닥지수',
+                symbol: '^IXIC',
+                badge: '미국',
+                color: '#9C27B0'
+            },
+            {
+                id: 'russell2000',
+                name: '러셀 2000',
+                symbol: '^RUT',
+                badge: '미국',
+                color: '#4ecdc4'
+            },
+            {
+                id: 'gold',
+                name: '금',
+                symbol: 'GC=F',
+                badge: '원자재',
+                color: '#FFD700'
+            },
+            {
+                id: 'silver',
+                name: '은',
+                symbol: 'SI=F',
+                badge: '원자재',
+                color: '#C0C0C0'
+            },
+            {
+                id: 'copper',
+                name: '구리',
+                symbol: 'HG=F',
+                badge: '원자재',
+                color: '#B87333'
+            },
+            {
+                id: 'wti',
+                name: 'WTI유',
+                symbol: 'CL=F',
+                badge: '원자재',
+                color: '#000000'
+            }
+        ];
+
+        let mainChart = null;
+        let currentSelectedCard = null;
+
+        // 시간 업데이트
+        function updateTime() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('currentTime').textContent =
+                now.toLocaleDateString('ko-KR', options);
+        }
+
+        // 초기화
+        async function init() {
+            updateTime();
+            setInterval(updateTime, 60000); // 1분마다 업데이트
+
+            await loadAllIndices();
+        }
+
+        // 모든 지수 로드
+        async function loadAllIndices() {
+            const grid = document.getElementById('indicesGrid');
+            grid.innerHTML = '';
+
+            for (const index of indices) {
+                const data = await fetchIndexData(index.id);
+                createIndexCard(index, data);
+            }
+        }
+
+        // 지수 데이터 가져오기 (실제 API 호출)
+        async function fetchIndexData(indexId) {
+            try {
+                const response = await fetch(`/stocks/api/market/indices/${indexId}/`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to fetch data');
+                }
+
+                const data = result.data;
+
+                // 날짜 문자열을 Date 객체로 변환
+                const chartData = data.chartData.map(item => ({
+                    date: new Date(item.date),
+                    value: item.value,
+                    open: item.open,
+                    high: item.high,
+                    low: item.low,
+                    volume: item.volume
+                }));
+
+                return {
+                    value: data.value,
+                    change: data.change,
+                    changePercent: data.changePercent,
+                    chartData: chartData,
+                    high: data.high,
+                    low: data.low,
+                    open: data.open,
+                    prevClose: data.prevClose,
+                    volume: data.volume
+                };
+
+            } catch (error) {
+                console.error(`Error fetching data for ${indexId}:`, error);
+
+                // 에러 시 빈 데이터 반환
+                return {
+                    value: 0,
+                    change: 0,
+                    changePercent: 0,
+                    chartData: [],
+                    high: 0,
+                    low: 0,
+                    open: 0,
+                    prevClose: 0,
+                    volume: 0,
+                    error: error.message
+                };
+            }
+        }
+
+        // 인덱스 카드 생성
+        function createIndexCard(index, data) {
+            const grid = document.getElementById('indicesGrid');
+
+            const card = document.createElement('div');
+            card.className = 'index-card';
+            card.dataset.indexId = index.id;
+
+            const changeClass = data.changePercent > 0 ? 'positive' :
+                               data.changePercent < 0 ? 'negative' : 'neutral';
+            const arrow = data.changePercent > 0 ? '▲' :
+                         data.changePercent < 0 ? '▼' : '─';
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="index-name">${index.name}</span>
+                    <span class="index-badge">${index.badge}</span>
+                </div>
+                <div class="index-value">${formatNumber(data.value)}</div>
+                <div class="index-change ${changeClass}">
+                    <span class="change-arrow">${arrow}</span>
+                    <span>${formatChange(data.change)} (${formatPercent(data.changePercent)}%)</span>
+                </div>
+                <div class="mini-chart" id="mini-${index.id}"></div>
+            `;
+
+            card.onclick = () => showChart(index, data);
+            grid.appendChild(card);
+
+            // 미니 차트 생성
+            createMiniChart(`mini-${index.id}`, data.chartData, index.color);
+        }
+
+        // 미니 차트 생성
+        function createMiniChart(elementId, chartData, color) {
+            const container = document.getElementById(elementId);
+            const canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+
+            new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(d => ''),
+                    datasets: [{
+                        data: chartData.map(d => d.value),
+                        borderColor: color,
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        // 차트 표시
+        function showChart(index, data) {
+            // 이전 선택 카드 비활성화
+            if (currentSelectedCard) {
+                currentSelectedCard.classList.remove('active');
+            }
+
+            // 현재 카드 활성화
+            const card = document.querySelector(`[data-index-id="${index.id}"]`);
+            card.classList.add('active');
+            currentSelectedCard = card;
+
+            // 차트 섹션 표시
+            const chartSection = document.getElementById('chartSection');
+            const chartTitle = document.getElementById('chartTitle');
+
+            chartTitle.textContent = `${index.name} 차트`;
+            chartSection.classList.add('active');
+
+            // 메인 차트 생성
+            createMainChart(data, index.color);
+
+            // 상세 정보 표시
+            showDetails(data);
+
+            // 스크롤
+            chartSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 메인 차트 생성
+        function createMainChart(data, color) {
+            const ctx = document.getElementById('mainChart');
+
+            if (mainChart) {
+                mainChart.destroy();
+            }
+
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.chartData.map(d => d.date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })),
+                    datasets: [{
+                        label: '가격',
+                        data: data.chartData.map(d => d.value),
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: color,
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            callbacks: {
+                                label: function(context) {
+                                    return '가격: ' + formatNumber(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 0,
+                                autoSkipPadding: 20
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#e9ecef'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return formatNumber(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 상세 정보 표시
+        function showDetails(data) {
+            const grid = document.getElementById('detailsGrid');
+
+            const details = [
+                { label: '현재가', value: formatNumber(data.value) },
+                { label: '시가', value: formatNumber(data.open) },
+                { label: '고가', value: formatNumber(data.high) },
+                { label: '저가', value: formatNumber(data.low) },
+                { label: '전일 종가', value: formatNumber(data.prevClose) },
+                { label: '변동', value: formatChange(data.change) + ' (' + formatPercent(data.changePercent) + '%)' }
+            ];
+
+            grid.innerHTML = details.map(detail => `
+                <div class="detail-item">
+                    <div class="detail-label">${detail.label}</div>
+                    <div class="detail-value">${detail.value}</div>
+                </div>
+            `).join('');
+        }
+
+        // 차트 닫기
+        function closeChart() {
+            document.getElementById('chartSection').classList.remove('active');
+            if (currentSelectedCard) {
+                currentSelectedCard.classList.remove('active');
+                currentSelectedCard = null;
+            }
+        }
+
+        // 포맷 함수들
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+            return num.toFixed(2);
+        }
+
+        function formatChange(change) {
+            const formatted = Math.abs(change).toFixed(2);
+            return change >= 0 ? '+' + formatted : '-' + formatted;
+        }
+
+        function formatPercent(percent) {
+            const formatted = Math.abs(percent).toFixed(2);
+            return percent >= 0 ? '+' + formatted : '-' + formatted;
+        }
+
+        // 주식 검색 기능
+        let stockSearchTimeout = null;
+        const stockSearchInput = document.getElementById('stockSearchInput');
+        const stockSearchSuggestions = document.getElementById('stockSearchSuggestions');
+
+        // 주식 검색 초기화
+        function initStockSearch() {
+            stockSearchInput.addEventListener('input', handleStockSearch);
+
+            // 외부 클릭 시 추천 목록 숨기기
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-container')) {
+                    stockSearchSuggestions.classList.remove('active');
+                }
+            });
+
+            // Enter 키 처리
+            stockSearchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const firstItem = stockSearchSuggestions.querySelector('.suggestion-item');
+                    if (firstItem) {
+                        firstItem.click();
+                    }
+                }
+            });
+        }
+
+        // 주식 검색 처리
+        function handleStockSearch() {
+            const query = stockSearchInput.value.trim();
+
+            if (stockSearchTimeout) {
+                clearTimeout(stockSearchTimeout);
+            }
+
+            if (query.length === 0) {
+                stockSearchSuggestions.classList.remove('active');
+                return;
+            }
+
+            // 300ms 딜레이로 검색
+            stockSearchTimeout = setTimeout(() => {
+                searchStocks(query);
+            }, 300);
+        }
+
+        // 주식 검색 API 호출
+        async function searchStocks(query) {
+            try {
+                const response = await fetch(`/stocks/api/search/?q=${encodeURIComponent(query)}&market=all`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayStockSuggestions(data.results || []);
+
+            } catch (error) {
+                console.error('주식 검색 오류:', error);
+                stockSearchSuggestions.innerHTML = '<div class="suggestion-item">검색 중 오류가 발생했습니다.</div>';
+                stockSearchSuggestions.classList.add('active');
+            }
+        }
+
+        // 검색 결과 표시
+        function displayStockSuggestions(results) {
+            if (results.length === 0) {
+                stockSearchSuggestions.innerHTML = '<div class="suggestion-item">검색 결과가 없습니다.</div>';
+                stockSearchSuggestions.classList.add('active');
+                return;
+            }
+
+            stockSearchSuggestions.innerHTML = '';
+
+            results.forEach(company => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+
+                const isUS = company.type === 'us';
+                const code = isUS ? company.symbol : company.code;
+                const market = isUS ? company.exchange : company.market;
+
+                item.innerHTML = `
+                    <div>
+                        <div class="company-name">${company.name}</div>
+                        <div class="company-code">${code}</div>
+                    </div>
+                    <div class="market-badge">${market || 'N/A'}</div>
+                `;
+
+                item.addEventListener('click', () => {
+                    const urlPrefix = isUS ? '/stocks/us-company' : '/stocks/company';
+                    window.location.href = `${urlPrefix}/${company.id}/`;
+                });
+
+                stockSearchSuggestions.appendChild(item);
+            });
+
+            stockSearchSuggestions.classList.add('active');
+        }
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            init();
+            initStockSearch();
+        });
+    </script>
+</body>
+</html>
