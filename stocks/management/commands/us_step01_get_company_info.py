@@ -151,8 +151,8 @@ def _get_company_info(symbols: List[str], batch_delay: float = 0.5) -> Dict[str,
                 'is_active': True,
             }
             
-            # API 부하 방지
-            time.sleep(random.uniform(batch_delay * 0.5, batch_delay * 1.5))
+            # API 부하 방지 (Render 배포 시 rate limit 방지를 위해 더 긴 대기)
+            time.sleep(random.uniform(batch_delay * 2.0, batch_delay * 3.0))
             
         except Exception as e:
             logger.error(f"{symbol} 정보 수집 실패: {e}")

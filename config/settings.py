@@ -125,9 +125,11 @@ STATIC_URL = '/static/'
 # 추가
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+# static 디렉토리가 존재할 때만 추가
+import os
+STATICFILES_DIRS = []
+if os.path.exists(BASE_DIR / 'static'):
+    STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # WhiteNoise configuration for static files
 STORAGES = {
