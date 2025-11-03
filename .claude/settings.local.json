@@ -10,7 +10,8 @@
       "Read(//c/Users/lushtoner/Desktop/project/main/v24_toss/**)",
       "Bash(cp:*)",
       "WebFetch(domain:www.inflearn.com)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

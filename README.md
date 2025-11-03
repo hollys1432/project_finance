@@ -158,10 +158,11 @@ python manage.py us_step02_get_past_price
    - Build Command: `./build.sh`
    - Start Command: `gunicorn config.wsgi:application`
 4. **환경 변수 설정**
-5. **배포 완료 후 Render Shell에서 초기 데이터 로딩**
-   ```bash
-   python manage.py init_data --quick
-   ```
+   - 필수: `SECRET_KEY`, `DEBUG=False`, `DATABASE_URL`
+   - **무료 플랜:** `INIT_DATA=true`, `INIT_MODE=quick` 추가 ⭐
+5. **배포 및 초기 데이터 로딩**
+   - 무료 플랜: 빌드 시 자동 로딩 (Logs에서 확인)
+   - 유료 플랜: Shell에서 `python manage.py init_data --quick` 실행
 6. **Cron Job 설정 (일일 자동 업데이트)**
    - Command: `python manage.py daily_update`
    - Schedule: `0 18 * * *` (매일 오후 6시 UTC)

@@ -30,6 +30,7 @@
 ## 4. 환경 변수 설정
 Web Service 설정 페이지의 "Environment" 탭에서 다음 환경 변수 추가:
 
+### 필수 환경 변수
 ```
 SECRET_KEY=your-very-secure-random-secret-key-here-make-it-long-and-random
 DEBUG=False
@@ -37,10 +38,26 @@ ALLOWED_HOSTS=.render.com
 DATABASE_URL=<Step 2에서 복사한 Internal Database URL>
 ```
 
-**중요**: SECRET_KEY는 Django secret key 생성기를 사용하거나 다음 명령어로 생성:
+**SECRET_KEY 생성 방법:**
 ```python
 python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 ```
+
+### 초기 데이터 자동 로딩 (무료 플랜 필수 ⭐)
+
+**⚠️ 중요: Render 무료 플랜은 Shell이 없습니다!**
+
+무료 플랜 사용자는 반드시 다음 환경 변수를 추가하세요:
+```
+INIT_DATA=true
+INIT_MODE=quick
+```
+
+**INIT_MODE 옵션:**
+- `quick` - 주요 종목, 1년치 (~20MB, 5~10분) ⭐ **무료 플랜 권장**
+- `us-only` - 미국만 (~48MB, 10분)
+- `kr-only` - 한국만 (~490MB, 타임아웃 위험)
+- `full` - 전체 (~700MB, **타임아웃 위험 높음**)
 
 ## 5. 배포 시작
 1. "Create Web Service" 클릭

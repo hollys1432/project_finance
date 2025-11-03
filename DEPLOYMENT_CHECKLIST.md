@@ -109,14 +109,20 @@ DATABASE_URL=<Step 2에서 복사한 Internal Database URL>
 python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 ```
 
-#### 선택적 환경 변수 (초기 데이터 자동 로딩)
+#### 초기 데이터 자동 로딩 (무료 플랜 권장 ⭐)
 
-⚠️ **권장하지 않음** (빌드 타임아웃 위험)
+⚠️ **무료 플랜은 Shell이 없으므로 이 방법을 사용하세요!**
 
 ```env
-INIT_DATA=false
+INIT_DATA=true
 INIT_MODE=quick
 ```
+
+**INIT_MODE 옵션:**
+- `quick` - 주요 종목, 1년치 (~20MB, 5~10분) ⭐ 권장
+- `kr-only` - 한국만 (~490MB, 타임아웃 위험)
+- `us-only` - 미국만 (~48MB)
+- `full` - 전체 (~700MB, 타임아웃 위험 높음)
 
 ---
 
@@ -137,23 +143,34 @@ INIT_MODE=quick
 
 ---
 
-### Step 6: 초기 데이터 로딩 (중요!)
+### Step 6: 초기 데이터 로딩 확인
 
-배포 완료 후 **Shell** 탭에서 실행:
+#### 무료 플랜 사용자
 
-#### 빠른 초기화 (권장, 무료 플랜)
+**Step 4에서 환경 변수를 설정했다면:**
+- 빌드 완료 후 자동으로 데이터 수집 시작
+- **Logs** 탭에서 진행 상황 확인:
+  ```
+  초기 데이터 로딩 시작...
+  [1/4] 한국 기업 정보 수집 중...
+  ✓ 한국 기업 정보 수집 완료
+  ...
+  ```
+
+**환경 변수를 설정하지 않았다면:**
+1. 로컬에서 프로덕션 DB에 연결 (자세한 방법은 `LOCAL_TO_PRODUCTION.md` 참고)
+2. 또는 유료 플랜으로 업그레이드
+
+#### 유료 플랜 사용자
+
+**Shell** 탭에서 직접 실행:
+
 ```bash
+# 빠른 초기화
 python manage.py init_data --quick
-```
-- 주요 종목 12개, 1년치
-- ~20 MB, 5~10분 소요
 
-#### 또는 특정 옵션 선택
-```bash
-# 한국 KOSPI만
+# 또는 커스텀 옵션
 python manage.py init_data --kr-markets "KOSPI" --skip-us
-
-# 미국 주요 종목만
 python manage.py init_data --skip-kr --us-symbols "AAPL,GOOGL,MSFT"
 ```
 
