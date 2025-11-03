@@ -125,15 +125,22 @@ def _get_company_info(symbols: List[str], batch_delay: float = 0.5) -> Dict[str,
     if yf is None:
         logger.error("yfinance가 설치되지 않았습니다: pip install yfinance")
         return {}
-    
+
+    # User-Agent 설정으로 Rate Limit 완화 시도
+    import requests
+    session = requests.Session()
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+    })
+
     companies = {}
     total = len(symbols)
-    
+
     for idx, symbol in enumerate(symbols, 1):
         try:
             logger.info(f"[{idx}/{total}] {symbol} 정보 수집 중...")
-            
-            ticker = yf.Ticker(symbol)
+
+            ticker = yf.Ticker(symbol, session=session)
             info = ticker.info
             
             if not info or 'symbol' not in info:
