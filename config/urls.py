@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('stocks/', include('stocks.urls')),  # stocks 접두사 추가
     path('quant/', include('quant.urls')),  # quant 접두사 추가
+    path('reports/', include('reports.urls')),  # reports 접두사 추가
 ]
 
 # 개발 환경에서만 정적 파일 서빙

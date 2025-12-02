@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.get_market_display }} 시장 분석 리포트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background: #F9FAFB;
+            color: #191F28;
+            line-height: 1.6;
+        }
+
+        /* 토스 스타일 헤더 */
+        .header {
+            background: white;
+            border-bottom: 1px solid #E5E8EB;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4E5968;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3182F6 0%, #1B64DA 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* 버튼 */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: #F2F4F6;
+            color: #4E5968;
+        }
+
+        .btn-secondary:hover {
+            background: #E5E8EB;
+        }
+
+        .btn-primary {
+            background: #3182F6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1B64DA;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* 리포트 헤더 */
+        .report-header {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .report-title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .report-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #191F28;
+            margin-bottom: 8px;
+        }
+
+        .report-badge {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .badge-daily {
+            background: #E8F3FF;
+            color: #3182F6;
+        }
+
+        .badge-weekly {
+            background: #F4F0FF;
+            color: #7C3AED;
+        }
+
+        .badge-monthly {
+            background: #FFF3E0;
+            color: #F97316;
+        }
+
+        .report-meta {
+            font-size: 15px;
+            color: #6B7684;
+            line-height: 1.8;
+        }
+
+        /* 섹션 */
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #191F28;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 지수 카드 */
+        .index-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .index-card {
+            background: linear-gradient(135deg, #3182F6 0%, #1B64DA 100%);
+            padding: 28px;
+            border-radius: 16px;
+            color: white;
+        }
+
+        .index-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        .index-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .index-stat {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        .index-stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 6px;
+        }
+
+        .index-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* 테이블 */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .data-table thead th {
+            background: #F9FAFB;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4E5968;
+            border-bottom: 2px solid #E5E8EB;
+        }
+
+        .data-table thead th:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        .data-table thead th:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        .data-table tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #F2F4F6;
+            font-size: 14px;
+            color: #191F28;
+        }
+
+        .data-table tbody tr:hover {
+            background: #F9FAFB;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 뱃지 */
+        .market-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-kr {
+            background: #E8F3FF;
+            color: #3182F6;
+        }
+
+        .badge-us {
+            background: #FFE8F0;
+            color: #E11D48;
+        }
+
+        /* 가격 변동 */
+        .positive {
+            color: #DC2626;
+            font-weight: 600;
+        }
+
+        .negative {
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        /* 기술 분석 카드 */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .tech-card {
+            background: #F9FAFB;
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid #3182F6;
+        }
+
+        .tech-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #191F28;
+            margin-bottom: 20px;
+        }
+
+        .tech-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #E5E8EB;
+        }
+
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+
+        .tech-label {
+            font-size: 14px;
+            color: #6B7684;
+        }
+
+        .tech-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #191F28;
+        }
+
+        /* 섹터 그리드 */
+        .sector-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .sector-card {
+            background: #F9FAFB;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #E5E8EB;
+            transition: all 0.2s;
+        }
+
+        .sector-card:hover {
+            border-color: #3182F6;
+            box-shadow: 0 2px 8px rgba(49, 130, 246, 0.1);
+        }
+
+        .sector-name {
+            font-size: 13px;
+            color: #6B7684;
+            margin-bottom: 8px;
+        }
+
+        .sector-change {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .sector-count {
+            font-size: 12px;
+            color: #9CA3AF;
+            margin-top: 6px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .header,
+            .btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="header-inner">
+            <a href="/reports/" class="logo">
+                <div class="logo-icon">📊</div>
+                <span>Finance Report</span>
+            </a>
+            <div class="header-actions">
+                <a href="{% url 'reports:list' %}" class="btn btn-secondary">← 목록으로</a>
+                <a href="{% url 'reports:export_pdf' report.pk %}" class="btn btn-primary">📄 PDF 다운로드</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <!-- 리포트 헤더 -->
+        <div class="report-header">
+            <div class="report-title-section">
+                <div>
+                    <h1 class="report-title">{{ report.get_market_display }} 시장 분석 리포트</h1>
+                    <div class="report-meta">
+                        <div>{{ report.get_report_type_display }} | {{ report.report_date|date:"Y년 m월 d일" }}</div>
+                        <div>생성일시: {{ report.created_at|date:"Y-m-d H:i:s" }}</div>
+                    </div>
+                </div>
+                <span class="report-badge badge-{{ report.report_type }}">{{ report.get_report_type_display }}</span>
+            </div>
+        </div>
+
+        <!-- 시장 지수 -->
+        {% if report.market_indices %}
+        <div class="section">
+            <h2 class="section-title">📈 시장 지수</h2>
+            <div class="index-grid">
+                {% if report.market_indices.kr %}
+                <div class="index-card">
+                    <div class="index-title">🇰🇷 한국 시장</div>
+                    <div class="index-stats">
+                        <div class="index-stat">
+                            <div class="index-stat-label">평균 등락률</div>
+                            <div class="index-stat-value">{{ report.market_indices.kr.avg_change }}%</div>
+                        </div>
+                        <div class="index-stat">
+                            <div class="index-stat-label">총 거래량</div>
+                            <div class="index-stat-value">{{ report.market_indices.kr.total_volume|floatformat:0 }}</div>
+                        </div>
+                        <div class="index-stat">
+                            <div class="index-stat-label">KOSPI 종목</div>
+                            <div class="index-stat-value">{{ report.market_indices.kr.kospi_count }}</div>
+                        </div>
+                        <div class="index-stat">
+                            <div class="index-stat-label">KOSDAQ 종목</div>
+                            <div class="index-stat-value">{{ report.market_indices.kr.kosdaq_count }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if report.market_indices.us %}
+                <div class="index-card">
+                    <div class="index-title">🇺🇸 미국 시장</div>
+                    <div class="index-stats">
+                        <div class="index-stat">
+                            <div class="index-stat-label">평균 등락률</div>
+                            <div class="index-stat-value">{{ report.market_indices.us.avg_change }}%</div>
+                        </div>
+                        <div class="index-stat">
+                            <div class="index-stat-label">총 거래량</div>
+                            <div class="index-stat-value">{{ report.market_indices.us.total_volume|floatformat:0 }}</div>
+                        </div>
+                        <div class="index-stat">
+                            <div class="index-stat-label">NASDAQ 종목</div>
+                            <div class="index-stat-value">{{ report.market_indices.us.nasdaq_count }}</div>
+                        </div>
+                        <div class="index-stat">
+                            <div class="index-stat-label">NYSE 종목</div>
+                            <div class="index-stat-value">{{ report.market_indices.us.nyse_count }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 상승률 상위 -->
+        {% if report.top_gainers %}
+        <div class="section">
+            <h2 class="section-title">🚀 상승률 상위 종목</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="8%">순위</th>
+                        <th width="10%">시장</th>
+                        <th width="15%">종목코드</th>
+                        <th>종목명</th>
+                        <th width="12%">현재가</th>
+                        <th width="12%">전일가</th>
+                        <th width="12%">등락률</th>
+                        <th width="15%">거래량</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in report.top_gainers %}
+                    <tr>
+                        <td><strong>{{ forloop.counter }}</strong></td>
+                        <td><span class="market-badge badge-{{ stock.market|lower }}">{{ stock.market }}</span></td>
+                        <td><code>{{ stock.code }}</code></td>
+                        <td><strong>{{ stock.name }}</strong></td>
+                        <td>{{ stock.close_price|floatformat:2 }}</td>
+                        <td>{{ stock.prev_close|floatformat:2 }}</td>
+                        <td class="positive">+{{ stock.change_pct }}%</td>
+                        <td>{{ stock.volume|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- 하락률 상위 -->
+        {% if report.top_losers %}
+        <div class="section">
+            <h2 class="section-title">📉 하락률 상위 종목</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="8%">순위</th>
+                        <th width="10%">시장</th>
+                        <th width="15%">종목코드</th>
+                        <th>종목명</th>
+                        <th width="12%">현재가</th>
+                        <th width="12%">전일가</th>
+                        <th width="12%">등락률</th>
+                        <th width="15%">거래량</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in report.top_losers %}
+                    <tr>
+                        <td><strong>{{ forloop.counter }}</strong></td>
+                        <td><span class="market-badge badge-{{ stock.market|lower }}">{{ stock.market }}</span></td>
+                        <td><code>{{ stock.code }}</code></td>
+                        <td><strong>{{ stock.name }}</strong></td>
+                        <td>{{ stock.close_price|floatformat:2 }}</td>
+                        <td>{{ stock.prev_close|floatformat:2 }}</td>
+                        <td class="negative">{{ stock.change_pct }}%</td>
+                        <td>{{ stock.volume|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- 거래량 상위 -->
+        {% if report.top_volume_stocks %}
+        <div class="section">
+            <h2 class="section-title">💹 거래량 상위 종목</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="8%">순위</th>
+                        <th width="12%">시장</th>
+                        <th width="15%">종목코드</th>
+                        <th>종목명</th>
+                        <th width="15%">현재가</th>
+                        <th width="20%">거래량</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in report.top_volume_stocks %}
+                    <tr>
+                        <td><strong>{{ forloop.counter }}</strong></td>
+                        <td><span class="market-badge badge-{{ stock.market|lower }}">{{ stock.market }}</span></td>
+                        <td><code>{{ stock.code }}</code></td>
+                        <td><strong>{{ stock.name }}</strong></td>
+                        <td>{{ stock.close_price|floatformat:2 }}</td>
+                        <td>{{ stock.volume|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- 섹터 분석 -->
+        {% if report.sector_analysis %}
+        <div class="section">
+            <h2 class="section-title">🏭 섹터별 분석</h2>
+            <div class="sector-grid">
+                {% for sector, data in report.sector_analysis.items %}
+                <div class="sector-card">
+                    <div class="sector-name">{{ sector }}</div>
+                    <div class="sector-change {% if data.avg_change > 0 %}positive{% else %}negative{% endif %}">
+                        {% if data.avg_change > 0 %}+{% endif %}{{ data.avg_change }}%
+                    </div>
+                    <div class="sector-count">{{ data.stock_count }} 종목</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 기술적 분석 -->
+        {% if report.technical_summary %}
+        <div class="section">
+            <h2 class="section-title">🔍 기술적 분석 요약</h2>
+            <div class="tech-grid">
+                {% if report.technical_summary.kr %}
+                <div class="tech-card">
+                    <div class="tech-card-title">🇰🇷 한국 시장</div>
+                    <div class="tech-item">
+                        <span class="tech-label">분석 종목 수</span>
+                        <span class="tech-value">{{ report.technical_summary.kr.total_analyzed }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">RSI 과매도 (< 30)</span>
+                        <span class="tech-value">{{ report.technical_summary.kr.rsi_oversold }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">RSI 과매수 (> 70)</span>
+                        <span class="tech-value">{{ report.technical_summary.kr.rsi_overbought }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">20일선 상향</span>
+                        <span class="tech-value">{{ report.technical_summary.kr.above_ma20 }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">20일선 하향</span>
+                        <span class="tech-value">{{ report.technical_summary.kr.below_ma20 }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if report.technical_summary.us %}
+                <div class="tech-card">
+                    <div class="tech-card-title">🇺🇸 미국 시장</div>
+                    <div class="tech-item">
+                        <span class="tech-label">분석 종목 수</span>
+                        <span class="tech-value">{{ report.technical_summary.us.total_analyzed }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">RSI 과매도 (< 30)</span>
+                        <span class="tech-value">{{ report.technical_summary.us.rsi_oversold }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">RSI 과매수 (> 70)</span>
+                        <span class="tech-value">{{ report.technical_summary.us.rsi_overbought }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">20일선 상향</span>
+                        <span class="tech-value">{{ report.technical_summary.us.above_ma20 }}</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-label">20일선 하향</span>
+                        <span class="tech-value">{{ report.technical_summary.us.below_ma20 }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

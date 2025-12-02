@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: finance-app
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: .render.com
+      - key: DATABASE_URL
+        sync: false  # 수동으로 Neon connection string 입력

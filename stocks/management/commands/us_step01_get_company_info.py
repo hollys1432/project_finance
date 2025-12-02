@@ -126,13 +126,6 @@ def _get_company_info(symbols: List[str], batch_delay: float = 0.5) -> Dict[str,
         logger.error("yfinance가 설치되지 않았습니다: pip install yfinance")
         return {}
 
-    # User-Agent 설정으로 Rate Limit 완화 시도
-    import requests
-    session = requests.Session()
-    session.headers.update({
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
-    })
-
     companies = {}
     total = len(symbols)
 
@@ -140,13 +133,13 @@ def _get_company_info(symbols: List[str], batch_delay: float = 0.5) -> Dict[str,
         try:
             logger.info(f"[{idx}/{total}] {symbol} 정보 수집 중...")
 
-            ticker = yf.Ticker(symbol, session=session)
+            ticker = yf.Ticker(symbol)
             info = ticker.info
-            
+
             if not info or 'symbol' not in info:
                 logger.warning(f"{symbol}: 정보 없음")
                 continue
-            
+
             companies[symbol] = {
                 'company_name': info.get('longName', info.get('shortName', symbol)),
                 'sector': info.get('sector'),
@@ -157,14 +150,14 @@ def _get_company_info(symbols: List[str], batch_delay: float = 0.5) -> Dict[str,
                 'currency': info.get('currency', 'USD'),
                 'is_active': True,
             }
-            
-            # API 부하 방지 (Render 배포 시 rate limit 방지를 위해 더 긴 대기)
-            time.sleep(random.uniform(batch_delay * 2.0, batch_delay * 3.0))
-            
+
+            # API 부하 방지
+            time.sleep(random.uniform(batch_delay * 0.5, batch_delay * 1.5))
+
         except Exception as e:
             logger.error(f"{symbol} 정보 수집 실패: {e}")
             continue
-    
+
     return companies
 
 

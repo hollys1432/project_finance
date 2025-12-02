@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.get_market_display }} 시장 분석 보고서</title>
+    <style>
+        /* 인쇄 설정 */
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', 'Pretendard', sans-serif;
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .print-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+            .print-container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 24pt;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .meta {
+            color: #666;
+            font-size: 11pt;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        h2 {
+            font-size: 16pt;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 9pt;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+
+        .positive {
+            color: #d32f2f;
+            font-weight: 600;
+        }
+
+        .negative {
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        .market-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 8pt;
+            font-weight: 600;
+        }
+
+        .badge-kr {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-us {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            border: 2px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .stat-title {
+            font-size: 11pt;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .tech-summary {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .tech-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #999;
+            font-size: 9pt;
+        }
+
+        /* 인쇄 버튼 스타일 */
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            z-index: 1000;
+            transition: all 0.2s;
+        }
+
+        .print-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .close-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+            z-index: 1000;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .close-button:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 인쇄 및 닫기 버튼 -->
+    <a href="/reports/" class="close-button no-print">← 목록으로</a>
+    <button onclick="window.print()" class="print-button no-print">🖨️ 인쇄 / PDF 저장</button>
+
+    <div class="print-container">
+    <div class="header">
+        <h1>{{ report.get_market_display }} 시장 분석 보고서</h1>
+        <div class="meta">
+            {{ report.get_report_type_display }} | {{ report.report_date|date:"Y년 m월 d일" }}<br>
+            생성일시: {{ report.created_at|date:"Y-m-d H:i:s" }}
+        </div>
+    </div>
+
+    {% if report.market_indices %}
+    <div class="section">
+        <h2>시장 지수</h2>
+        <div class="stats-grid">
+            {% if report.market_indices.kr %}
+            <div class="stat-card">
+                <div class="stat-title">한국 시장 평균 등락률</div>
+                <div class="stat-value">{{ report.market_indices.kr.avg_change }}%</div>
+                <div style="margin-top: 10px; font-size: 9pt; color: #666;">
+                    총 거래량: {{ report.market_indices.kr.total_volume|floatformat:0 }}<br>
+                    KOSPI: {{ report.market_indices.kr.kospi_count }} | KOSDAQ: {{ report.market_indices.kr.kosdaq_count }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if report.market_indices.us %}
+            <div class="stat-card">
+                <div class="stat-title">미국 시장 평균 등락률</div>
+                <div class="stat-value">{{ report.market_indices.us.avg_change }}%</div>
+                <div style="margin-top: 10px; font-size: 9pt; color: #666;">
+                    총 거래량: {{ report.market_indices.us.total_volume|floatformat:0 }}<br>
+                    NASDAQ: {{ report.market_indices.us.nasdaq_count }} | NYSE: {{ report.market_indices.us.nyse_count }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if report.top_gainers %}
+    <div class="section">
+        <h2>상승률 상위 종목 (Top 10)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th width="8%">순위</th>
+                    <th width="10%">시장</th>
+                    <th width="15%">종목코드</th>
+                    <th width="25%">종목명</th>
+                    <th width="14%">현재가</th>
+                    <th width="14%">전일가</th>
+                    <th width="14%">등락률</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in report.top_gainers|slice:":10" %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><span class="market-badge badge-{{ stock.market|lower }}">{{ stock.market }}</span></td>
+                    <td>{{ stock.code }}</td>
+                    <td><strong>{{ stock.name }}</strong></td>
+                    <td>{{ stock.close_price|floatformat:2 }}</td>
+                    <td>{{ stock.prev_close|floatformat:2 }}</td>
+                    <td class="positive">+{{ stock.change_pct }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if report.top_losers %}
+    <div class="section">
+        <h2>하락률 상위 종목 (Top 10)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th width="8%">순위</th>
+                    <th width="10%">시장</th>
+                    <th width="15%">종목코드</th>
+                    <th width="25%">종목명</th>
+                    <th width="14%">현재가</th>
+                    <th width="14%">전일가</th>
+                    <th width="14%">등락률</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in report.top_losers|slice:":10" %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><span class="market-badge badge-{{ stock.market|lower }}">{{ stock.market }}</span></td>
+                    <td>{{ stock.code }}</td>
+                    <td><strong>{{ stock.name }}</strong></td>
+                    <td>{{ stock.close_price|floatformat:2 }}</td>
+                    <td>{{ stock.prev_close|floatformat:2 }}</td>
+                    <td class="negative">{{ stock.change_pct }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if report.top_volume_stocks %}
+    <div class="section">
+        <h2>거래량 상위 종목 (Top 10)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th width="8%">순위</th>
+                    <th width="10%">시장</th>
+                    <th width="20%">종목코드</th>
+                    <th width="30%">종목명</th>
+                    <th width="17%">현재가</th>
+                    <th width="15%">거래량</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in report.top_volume_stocks|slice:":10" %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><span class="market-badge badge-{{ stock.market|lower }}">{{ stock.market }}</span></td>
+                    <td>{{ stock.code }}</td>
+                    <td><strong>{{ stock.name }}</strong></td>
+                    <td>{{ stock.close_price|floatformat:2 }}</td>
+                    <td>{{ stock.volume|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if report.technical_summary %}
+    <div class="section">
+        <h2>기술적 분석 요약</h2>
+        {% if report.technical_summary.kr %}
+        <div class="tech-summary">
+            <h3 style="margin-bottom: 10px; font-size: 12pt;">한국 시장 (분석 종목: {{ report.technical_summary.kr.total_analyzed }})</h3>
+            <div class="tech-item">
+                <span>RSI 과매도 (< 30)</span>
+                <strong>{{ report.technical_summary.kr.rsi_oversold }} 종목</strong>
+            </div>
+            <div class="tech-item">
+                <span>RSI 과매수 (> 70)</span>
+                <strong>{{ report.technical_summary.kr.rsi_overbought }} 종목</strong>
+            </div>
+            <div class="tech-item">
+                <span>20일 이동평균선 상향</span>
+                <strong>{{ report.technical_summary.kr.above_ma20 }} 종목</strong>
+            </div>
+            <div class="tech-item">
+                <span>20일 이동평균선 하향</span>
+                <strong>{{ report.technical_summary.kr.below_ma20 }} 종목</strong>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if report.technical_summary.us %}
+        <div class="tech-summary" style="margin-top: 15px;">
+            <h3 style="margin-bottom: 10px; font-size: 12pt;">미국 시장 (분석 종목: {{ report.technical_summary.us.total_analyzed }})</h3>
+            <div class="tech-item">
+                <span>RSI 과매도 (< 30)</span>
+                <strong>{{ report.technical_summary.us.rsi_oversold }} 종목</strong>
+            </div>
+            <div class="tech-item">
+                <span>RSI 과매수 (> 70)</span>
+                <strong>{{ report.technical_summary.us.rsi_overbought }} 종목</strong>
+            </div>
+            <div class="tech-item">
+                <span>20일 이동평균선 상향</span>
+                <strong>{{ report.technical_summary.us.above_ma20 }} 종목</strong>
+            </div>
+            <div class="tech-item">
+                <span>20일 이동평균선 하향</span>
+                <strong>{{ report.technical_summary.us.below_ma20 }} 종목</strong>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        본 보고서는 자동으로 생성되었습니다. | 투자 판단의 참고 자료로만 활용하시기 바랍니다.
+    </div>
+    </div><!-- .print-container -->
+
+    {% if print_mode %}
+    <script>
+        // 페이지 로드 시 자동으로 인쇄 대화상자 열기 (선택사항)
+        // window.addEventListener('load', function() {
+        //     setTimeout(function() { window.print(); }, 500);
+        // });
+    </script>
+    {% endif %}
+</body>
+</html>
