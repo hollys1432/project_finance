@@ -41,6 +41,12 @@
             z-index: 100;
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
         .logo {
             font-size: 15px;
             font-weight: 700;
@@ -52,6 +58,28 @@
 
         .logo:hover {
             opacity: 0.7;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-link {
+            font-size: 14px;
+            color: #6c757d;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #0064ff;
+        }
+
+        .nav-link.active {
+            color: #0064ff;
+            font-weight: 600;
         }
 
         /* 회사 정보 헤더 */
@@ -436,7 +464,14 @@
     <div class="container">
         <!-- 최상단 헤더: 로고와 검색 -->
         <div class="top-header">
-            <a href="/" class="logo">카페 증권</a>
+            <div class="header-left">
+                <a href="/" class="logo">카페 증권</a>
+                <nav class="nav-links">
+                    <a href="/" class="nav-link">홈</a>
+                    <a href="/stocks/" class="nav-link active">주식 목록</a>
+                    <a href="/reports/" class="nav-link">리포트</a>
+                </nav>
+            </div>
             <div class="search-section">
                 <div class="search-container">
                     <div class="search-label">🔍 다른 종목 검색하기</div>
