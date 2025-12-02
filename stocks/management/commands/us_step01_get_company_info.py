@@ -29,14 +29,27 @@ def _get_sp500_symbols() -> List[str]:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-        
+
         url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
         import requests
+        from io import StringIO
+
         response = requests.get(url, headers=headers)
         response.raise_for_status()
-        
-        tables = pd.read_html(response.text)
-        df = tables[0]  # 첫 번째 테이블이 S&P 500 리스트
+
+        # StringIO로 감싸서 FutureWarning 방지
+        tables = pd.read_html(StringIO(response.text))
+
+        # Symbol 컬럼이 있는 테이블 찾기 (보통 두 번째 테이블)
+        df = None
+        for table in tables:
+            if 'Symbol' in table.columns:
+                df = table
+                break
+
+        if df is None:
+            raise ValueError("Symbol 컬럼을 가진 테이블을 찾을 수 없습니다")
+
         symbols = df['Symbol'].tolist()
         
         # 심볼 정리 (점이 포함된 경우 등 처리)
@@ -63,10 +76,13 @@ def _get_nasdaq100_symbols() -> List[str]:
         url = "https://en.wikipedia.org/wiki/NASDAQ-100"
         # requests를 사용하여 헤더 포함해서 가져오기
         import requests
+        from io import StringIO
+
         response = requests.get(url, headers=headers)
         response.raise_for_status()
 
-        tables = pd.read_html(response.text)
+        # StringIO로 감싸서 FutureWarning 방지
+        tables = pd.read_html(StringIO(response.text))
 
         # NASDAQ-100 테이블 찾기
         for table in tables:

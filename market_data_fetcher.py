@@ -7,6 +7,17 @@ import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
 import json
+import os
+
+# Yahoo Finance 캐시 설정 (Render 서버용)
+try:
+    yf.set_tz_cache_location("/tmp/yfinance_cache")
+except:
+    pass
+
+# yfinance가 proxy를 사용하지 않도록 설정
+os.environ['no_proxy'] = '*'
+os.environ['NO_PROXY'] = '*'
 
 
 class MarketDataFetcher:
@@ -86,6 +97,7 @@ class MarketDataFetcher:
             지수 정보를 담은 딕셔너리
         """
         try:
+            # yfinance는 자체적으로 User-Agent를 처리함
             ticker = yf.Ticker(symbol)
 
             # 히스토리 데이터 가져오기
@@ -190,6 +202,7 @@ class MarketDataFetcher:
             실시간 시세 정보
         """
         try:
+            # yfinance는 자체적으로 User-Agent를 처리함
             ticker = yf.Ticker(symbol)
             info = ticker.info
 
