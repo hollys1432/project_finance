@@ -16,7 +16,10 @@
       "Bash(findstr:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:project-finance-9zsy.onrender.com)",
+      "Bash(pip show:*)"
     ],
     "deny": [],
     "ask": []

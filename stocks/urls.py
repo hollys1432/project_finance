@@ -1,13 +1,14 @@
 # stocks/urls.py
 
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views, api_views, market_views
 
 app_name = 'stocks'
 
 urlpatterns = [
-    # 메인 페이지 (통합 검색)
-    path('', views.IndexView.as_view(), name='index'),
+    # 메인 페이지로 리다이렉트 (홈 화면에 검색 기능이 있음)
+    path('', RedirectView.as_view(url='/', permanent=False), name='index'),
 
     # 한국 주식 상세 페이지
     path('company/<int:company_id>/', views.CompanyDetailView.as_view(), name='company_detail'),
