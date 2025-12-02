@@ -18,65 +18,64 @@
             line-height: 1.6;
         }
 
-        /* 토스 스타일 헤더 */
+        /* 헤더 - 메인 화면과 동일한 스타일 */
         .header {
-            background: white;
-            border-bottom: 1px solid #E5E8EB;
-            padding: 0;
+            background: #fff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 24px;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .header-inner {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: #4E5968;
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #3182F6 0%, #1B64DA 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-        }
-
-        .nav-menu {
-            display: flex;
             gap: 32px;
         }
 
-        .nav-item {
-            color: #4E5968;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-item:hover {
-            color: #3182F6;
-        }
-
-        .nav-item.active {
-            color: #3182F6;
+        .logo {
+            font-size: 15px;
             font-weight: 700;
+            color: #212529;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .logo:hover {
+            opacity: 0.7;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-link {
+            font-size: 14px;
+            color: #6c757d;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #0064ff;
+        }
+
+        .nav-link.active {
+            color: #0064ff;
+            font-weight: 600;
         }
 
         /* 메인 컨테이너 */
@@ -460,13 +459,13 @@
     <!-- 헤더 -->
     <div class="header">
         <div class="header-inner">
-            <div class="logo">
-                <span>시장 분석 리포트</span>
+            <div class="header-left">
+                <a href="/" class="logo">카페 증권</a>
+                <nav class="nav-links">
+                    <a href="/" class="nav-link">홈</a>
+                    <a href="/reports/" class="nav-link active">리포트</a>
+                </nav>
             </div>
-            <nav class="nav-menu">
-                <a href="/" class="nav-item">홈</a>
-                <a href="/reports/" class="nav-item active">리포트</a>
-            </nav>
         </div>
     </div>
 
